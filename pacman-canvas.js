@@ -31,27 +31,45 @@ const SUPABASE = {
 };
 
 async function remoteFetchTop(limit = 20) {
-  const url = `${SUPABASE.url}/rest/v1/${SUPABASE.table}?select=name,score,ts&order=score.desc,nullsfirst&limit=${limit}`;
-  const res = await fetch(url, { headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}` } });
-  if (!res.ok) throw new Error('remote fetch failed');
-  return await res.json();
+  const url = `${SUPABASE.url}/rest/v1/${SUPABASE.table}` +
+              `?select=name,score,ts&order=score.desc&limit=${limit}`;
+  const res = await fetch(url, {
+    headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}` }
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    console.error('remote fetch failed', res.status, text);
+    throw new Error(text || 'remote fetch failed');
+  }
+  return JSON.parse(text);
 }
 
+
 async function remoteUpsertBest(name, score) {
-  const body = [{ name, score, ts: Date.now() }];
+  const body = [{ name, score: Number(score) || 0, ts: Date.now() }];
   const url = `${SUPABASE.url}/rest/v1/${SUPABASE.table}?on_conflict=name`;
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       apikey: SUPABASE.key,
       Authorization: `Bearer ${SUPABASE.key}`,
       'Content-Type': 'application/json',
-      Prefer: 'resolution=merge-duplicates'
+      // вернёт строку + upsert вместо дублей
+      Prefer: 'resolution=merge-duplicates,return=representation'
     },
     body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error('remote upsert failed');
+
+  const text = await res.text();
+  if (!res.ok) {
+    console.error('remote upsert failed', res.status, text);
+    throw new Error(text || 'remote upsert failed');
+  } else {
+    try { console.log('remote upsert ok:', JSON.parse(text)); } catch { console.log('remote upsert ok:', text); }
+  }
 }
+
 
 
 // === Leaderboard / player (localStorage) ===
@@ -105,10 +123,10 @@ async function renderLeaderboard() {
 
   let rows = [];
   try {
-    rows = await remoteFetchTop(20); // берём из облака
+    rows = await remoteFetchTop(20);       // читаем из облака
   } catch (e) {
     console.warn('Remote fetch failed, showing local fallback:', e);
-    rows = getLeaderboard();         // фолбэк — локальные записи
+    rows = getLeaderboard();               // локальный резерв
   }
 
   ul.innerHTML = '';
@@ -118,8 +136,6 @@ async function renderLeaderboard() {
     ul.appendChild(li);
   });
 }
-
-
 
 
 // global enums
