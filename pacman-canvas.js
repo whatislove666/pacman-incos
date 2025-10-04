@@ -88,6 +88,13 @@ function geronimo() {
 	var game;
 	var canvas_walls, context_walls;
 	var inky, blinky, clyde, pinky;
+	// --- single animation loop control ---
+	let _loopTimerId = null;
+	let _loopRunning = false;
+	function stopAnimationLoop() {
+		_loopRunning = false;
+		if (_loopTimerId) { clearTimeout(_loopTimerId); _loopTimerId = null; }
+	}
 
 	var mapConfig = "data/map.json";
 
@@ -339,6 +346,7 @@ function geronimo() {
 		};
 
 		this.newGame = function () {
+			stopAnimationLoop();
 			ensurePlayerName();                 // спросим ник 1 раз
 			this.init(0);                       // подготовка уровня/состояний
 			this.forceStartAnimationLoop();     // сразу запуск цикла
@@ -461,14 +469,16 @@ function geronimo() {
 		/* game controls */
 
 		this.forceStartAnimationLoop = function () {
-			// start timer
+			stopAnimationLoop();              // не допускаем второй цикл
 			this.timer.start();
-
-			this.pause = false;
+			this.pause   = false;
 			this.started = true;
+			this.gameOver = false;
 			this.closeMessage();
+			
+			_loopRunning = true;
 			animationLoop();
-		}
+		};
 
 		this.forcePause = function () {
 			this.timer.stop();
@@ -579,6 +589,7 @@ function geronimo() {
 
 		this.endGame = function (allLevelsCompleted = false) {
 			console.log('Game Over by ' + (allLevelsCompleted ? 'WIN' : 'LOSS'));
+			stopAnimationLoop();
 			this.pause = true;
 			this.gameOver = true;
 		}
@@ -1656,7 +1667,8 @@ function geronimo() {
 		}
 
 		//requestAnimationFrame(animationLoop);
-		setTimeout(animationLoop, game.refreshRate);
+		if (!_loopRunning) return;
+		_loopTimerId = setTimeout(animationLoop, game.refreshRate);
 
 	}
 
