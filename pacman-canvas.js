@@ -12,6 +12,18 @@
 
 "use strict";
 
+// === Inco Agent sprites ===
+function loadImg(src){ const i=new Image(); i.src = src; return i; }
+
+const AGENT = {
+  normal: loadImg('img/cloud-normal.png'),
+  power:  loadImg('img/cloud-power.png'),
+  dead:   loadImg('img/cloud-dead.png'),
+};
+let agentMode = 'normal';
+let agentPowerTimer = null;
+
+
 // global enums
 const GHOSTS = {
 	INKY: 'inky',
