@@ -248,6 +248,8 @@ function geronimo() {
 		this.started = false; // TODO: what's the purpose of this exactly?
 		this.pause = true;
 		this.gameOver = false;
+		this.awaitingNextLevel = false; // ждём ли нажатия NEXT LEVEL
+
 
 		this.score = new Score();
 		this.soundfx = 0;
@@ -384,20 +386,26 @@ function geronimo() {
 		};
 
 		this.nextLevel = function () {
-			console.debug('nextLevel: current, final', this.level, FINAL_LEVEL);
+			// увеличиваем уровень
+			this.level++;
+			
+			// если пройден финальный — конец игры, сохраняем скор
 			if (this.level === FINAL_LEVEL) {
-				console.log('next level, ' + FINAL_LEVEL + ', end game');
-				game.endGame(true);
-				saveScore(game.score.score || 0);     // ← ДОБАВИЛИ
-				game.showHighscoreForm(); 
-			} else {
-				// Останавливаем текущий цикл, ставим на паузу и показываем кнопку
-				if (typeof stopAnimationLoop === 'function') stopAnimationLoop();
-				this.pause = true;
-				this.started = false;
-				this.showNextLevelPrompt();
+				this.endGame(true);
+				saveScore(this.score.score || 0);
+				return;
 			}
+			
+			// иначе — ставим игру на паузу и ждём явного старта
+			if (typeof stopAnimationLoop === 'function') stopAnimationLoop();
+			this.pause = true;
+			this.started = false;
+			this.awaitingNextLevel = true;
+			
+			// показываем кнопку
+			this.showNextLevelPrompt();
 		};
+
 
 		/* UI functions */
 		this.drawHearts = function (count) {
@@ -486,6 +494,7 @@ function geronimo() {
 			);
 		}
 
+
 		// Кнопка "NEXT LEVEL" поверх карты
 		this.showNextLevelPrompt = function () {
 			this.pauseAndShowMessage(
@@ -493,6 +502,28 @@ function geronimo() {
 				"<span class='button' id='next-level-btn'>NEXT LEVEL</span>"
 			);
 		};
+
+		// Старт следующего уровня с экрана-приглашения
+		this.startNextLevelFromPrompt = function () {
+			this.closeMessage();
+			this.pause = 0;
+			this.started = true;
+			this.gameOver = false;
+			this.awaitingNextLevel = false;
+			// level уже инкрементирован в nextLevel()
+			this.init(this.level);
+			
+			// перезапускаем цикл отрисовки
+			if (typeof this.forceStartAnimationLoop === 'function') {
+				this.forceStartAnimationLoop();
+			}
+			
+			if (typeof $ !== 'undefined') {
+				$('#game-buttons').show();
+				$('#menu-buttons').hide();
+			}
+		};
+
 
 		/* game controls */
 
@@ -520,6 +551,10 @@ function geronimo() {
 		}
 
 		this.pauseResume = function () {
+			if (this.awaitingNextLevel) {
+				this.startNextLevelFromPrompt();
+				return;
+			}
 			if (this.gameOver) {
 				console.log('Cannot pause / resume. GameOver set to true.');
 				return;
@@ -571,6 +606,8 @@ function geronimo() {
 		this.init = async (state) => {
 
 			console.log("init game " + state);
+			this.awaitingNextLevel = false;
+
 
 			// get Level Map
 			this.map = await this.loadMapConfig();
@@ -1573,6 +1610,12 @@ function geronimo() {
 			$('#game-buttons').show();
 			$('#menu-buttons').hide();
 		});
+
+		// Кнопка NEXT LEVEL
+		$(document).on('click', '#next-level-btn', function () {
+			game.startNextLevelFromPrompt();
+		});
+
 
 
 		// checkAppCache();
