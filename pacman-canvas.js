@@ -386,25 +386,32 @@ function geronimo() {
 		};
 
 		this.nextLevel = function () {
-			// увеличиваем уровень
-			this.level++;
+			const completedLevel = this.level;      // только что пройденный
+			const nextLevel = this.level + 1;
 			
-			// если пройден финальный — конец игры, сохраняем скор
-			if (this.level === FINAL_LEVEL) {
+			// финальный кейс
+			if (nextLevel === FINAL_LEVEL) {
 				this.endGame(true);
 				saveScore(this.score.score || 0);
 				return;
 			}
 			
-			// иначе — ставим игру на паузу и ждём явного старта
+			// пауза + ждём подтверждения
 			if (typeof stopAnimationLoop === 'function') stopAnimationLoop();
 			this.pause = true;
 			this.started = false;
 			this.awaitingNextLevel = true;
 			
-			// показываем кнопку
-			this.showNextLevelPrompt();
+			// запомним, какой уровень запускать после кнопки
+			this._pendingLevel = nextLevel;
+			
+			// показываем кнопку (HTML ОБЯЗАТЕЛЬНО через .html(), см. pauseAndShowMessage)
+			this.pauseAndShowMessage(
+				`Level ${completedLevel} complete!`,
+				`<button id="next-level-btn" class="next-level-btn">NEXT LEVEL</button>`
+			);
 		};
+
 
 
 		/* UI functions */
@@ -459,7 +466,7 @@ function geronimo() {
 		this.showMessage = function (title, text) {
 			$('#canvas-overlay-container').fadeIn(200);
 			$('#game-buttons').hide(); // прячем только джойстик
-			$('#canvas-overlay-content #title').text(title);
+			$('#canvas-overlay-content #title').html(title);
 			$('#canvas-overlay-content #text').html(text);
 		}
 
@@ -495,14 +502,6 @@ function geronimo() {
 			);
 		}
 
-
-		// Кнопка "NEXT LEVEL" поверх карты
-		this.showNextLevelPrompt = function () {
-			this.pauseAndShowMessage(
-				"Level " + this.level + " complete!",
-				"<span class='button' id='next-level-btn'>NEXT LEVEL</span>"
-			);
-		};
 
 		// Старт следующего уровня с экрана-приглашения
 		this.startNextLevelFromPrompt = function () {
@@ -1595,9 +1594,26 @@ function geronimo() {
 		
 
 		// Кнопка NEXT LEVEL
-		$(document).on('click', '#next-level-btn', function () {
-			game.startNextLevelFromPrompt();
+		$(document).on('click', '#next-level-btn', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			game.closeMessage();
+			game.pause = 0;
+			game.started = true;
+			game.gameOver = false;
+			game.awaitingNextLevel = false;
+			
+			// запускаем заранее сохранённый следующий уровень
+			game.level = game._pendingLevel || (game.level + 1);
+			delete game._pendingLevel;
+			game.init(game.level);
+			if (typeof game.forceStartAnimationLoop === 'function') game.forceStartAnimationLoop();
+			
+			// UI: в игре должен быть джойстик, меню прячем
+			$('#game-buttons').show();
+			$('#menu-buttons').hide();
 		});
+
 
 
 
