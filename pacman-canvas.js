@@ -302,7 +302,7 @@ function geronimo() {
 			if (r) {
 				console.log("new Game");
 				this.init(0);
-				this.forceResume();
+				this.forceStartAnimationLoop();
 			}
 		};
 
