@@ -386,32 +386,50 @@ function geronimo() {
 		};
 
 		this.nextLevel = function () {
-			const completedLevel = this.level;      // только что пройденный
-			const nextLevel = this.level + 1;
+			const completedLevel = this.level;       // ТОЛЬКО ЧТО пройден
+			const nextLevel = this.level + 1;        // КОТОРЫЙ будем запускать
 			
-			// финальный кейс
+			// Финальный кейс
 			if (nextLevel === FINAL_LEVEL) {
 				this.endGame(true);
 				saveScore(this.score.score || 0);
 				return;
 			}
 			
-			// пауза + ждём подтверждения
+			// Пауза и ожидание явного старта
 			if (typeof stopAnimationLoop === 'function') stopAnimationLoop();
 			this.pause = true;
 			this.started = false;
-			this.awaitingNextLevel = true;
 			
-			// запомним, какой уровень запускать после кнопки
+			// Флаги ожидания и запоминаем, какой уровень стартовать
+			this.awaitingNextLevel = true;
 			this._pendingLevel = nextLevel;
 			
-			// показываем кнопку (HTML ОБЯЗАТЕЛЬНО через .html(), см. pauseAndShowMessage)
+			// Сообщение + КНОПКА (HTML!)
 			this.pauseAndShowMessage(
 				`Level ${completedLevel} complete!`,
 				`<button id="next-level-btn" class="next-level-btn">NEXT LEVEL</button>`
 			);
 		};
 
+		this.startNextLevelFromPrompt = function () {
+			this.closeMessage();
+			this.pause = 0;
+			this.started = true;
+			this.gameOver = false;
+			
+			// ВАЖНО: присваиваем правильный номер уровня
+			this.level = this._pendingLevel || (this.level + 1);
+			delete this._pendingLevel;
+			
+			this.awaitingNextLevel = false;
+			this.init(this.level);
+			if (typeof this.forceStartAnimationLoop === 'function') {
+				this.forceStartAnimationLoop();
+			}
+			$('#game-buttons').show();
+			$('#menu-buttons').hide();
+		};
 
 
 		/* UI functions */
@@ -551,6 +569,10 @@ function geronimo() {
 		}
 
 		this.pauseResume = function () {
+			if (this.awaitingNextLevel) {
+				this.startNextLevelFromPrompt();
+				return;
+			}
 			if (this.awaitingNextLevel) {
 				this.startNextLevelFromPrompt();
 				return;
@@ -1597,24 +1619,8 @@ function geronimo() {
 		$(document).on('click', '#next-level-btn', function (e) {
 			e.preventDefault();
 			e.stopPropagation();
-			game.closeMessage();
-			game.pause = 0;
-			game.started = true;
-			game.gameOver = false;
-			game.awaitingNextLevel = false;
-			
-			// запускаем заранее сохранённый следующий уровень
-			game.level = game._pendingLevel || (game.level + 1);
-			delete game._pendingLevel;
-			game.init(game.level);
-			if (typeof game.forceStartAnimationLoop === 'function') game.forceStartAnimationLoop();
-			
-			// UI: в игре должен быть джойстик, меню прячем
-			$('#game-buttons').show();
-			$('#menu-buttons').hide();
+			game.startNextLevelFromPrompt();
 		});
-
-
 
 
 		// checkAppCache();
