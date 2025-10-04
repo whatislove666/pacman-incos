@@ -23,6 +23,37 @@ const AGENT = {
 let agentMode = 'normal';
 let agentPowerTimer = null;
 
+// ===== Remote leaderboard (Supabase REST) =====
+const SUPABASE = {
+  url: 'https://limrphcxbadbnjoxzijp.supabase.co',   // вставь свой URL
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpbXJwaGN4YmFkYm5qb3h6aWpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTQyMTIsImV4cCI6MjA3NDk5MDIxMn0.4VEQaUAUhTfviYoYRQPjUL2zyrUypVUVcpuMEgMVT3c',                      // вставь свой anon key
+  table: 'leaderboard'
+};
+
+async function remoteFetchTop(limit = 20) {
+  const url = `${SUPABASE.url}/rest/v1/${SUPABASE.table}?select=name,score,ts&order=score.desc,nullsfirst&limit=${limit}`;
+  const res = await fetch(url, { headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}` } });
+  if (!res.ok) throw new Error('remote fetch failed');
+  return await res.json();
+}
+
+async function remoteUpsertBest(name, score) {
+  const body = [{ name, score, ts: Date.now() }];
+  const url = `${SUPABASE.url}/rest/v1/${SUPABASE.table}?on_conflict=name`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE.key,
+      Authorization: `Bearer ${SUPABASE.key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('remote upsert failed');
+}
+
+
 // === Leaderboard / player (localStorage) ===
 const STORAGE_KEYS = { leaderboard: 'inco_leaderboard', player: 'inco_player' };
 
@@ -44,24 +75,50 @@ function ensurePlayerName() {
   }
   return name;
 }
-function saveScore(score) {
-  const name = ensurePlayerName();
-  const entry = { name, score: Number(score)||0, ts: Date.now() };
-  const lb = getLeaderboard();
-  lb.push(entry);
-  lb.sort((a,b) => (b.score - a.score) || (a.ts - b.ts));
-  setLeaderboard(lb);
+
+async function saveScore(score) {
+  const name = (ensurePlayerName() || 'anon').trim().slice(0, 16);
+
+  // 1) Пытаемся сохранить в Supabase (лучший результат на ник)
+  try {
+    await remoteUpsertBest(name, Number(score) || 0);
+  } catch (e) {
+    // 2) Фолбэк: локально держим только лучший результат по нику
+    console.warn('Remote save failed, fallback to local:', e);
+    const key = name.toLowerCase();
+    const lb = getLeaderboard();
+    const i = lb.findIndex(e => (e.name || '').toLowerCase() === key);
+    if (i >= 0) {
+      if (Number(score) > Number(lb[i].score)) lb[i] = { name, score: Number(score)||0, ts: Date.now() };
+    } else {
+      lb.push({ name, score: Number(score)||0, ts: Date.now() });
+    }
+    lb.sort((a,b)=> (b.score-a.score) || (a.ts-b.ts));
+    setLeaderboard(lb);
+  }
 }
-function renderLeaderboard() {
+
+async function renderLeaderboard() {
   const ul = document.getElementById('highscore-list');
   if (!ul) return;
+  ul.innerHTML = 'Loading…';
+
+  let rows = [];
+  try {
+    rows = await remoteFetchTop(20); // берём из облака
+  } catch (e) {
+    console.warn('Remote fetch failed, showing local fallback:', e);
+    rows = getLeaderboard();         // фолбэк — локальные записи
+  }
+
   ul.innerHTML = '';
-  getLeaderboard().slice(0,20).forEach((e,i)=>{
+  rows.forEach(e => {
     const li = document.createElement('li');
     li.textContent = `${e.name} — ${e.score}`;
     ul.appendChild(li);
   });
 }
+
 
 
 
