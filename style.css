@@ -497,3 +497,23 @@ ul.nav li:hover, ul.nav.sub li:hover {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* Кнопка NEXT LEVEL */
+.next-level-btn {
+  background: linear-gradient(90deg, #007BFF, #00D4FF);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  padding: 12px 20px;
+  margin-top: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00D4FF;
+  transition: 0.2s;
+}
+
+.next-level-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #00D4FF;
+}
