@@ -1534,7 +1534,7 @@ function geronimo() {
 			inky.draw(context);
 			clyde.draw(context);
 
-
+			//Pacman
 			const sprite = (AGENT[agentMode] || AGENT.normal);
 			const size = Math.floor(pacman.radius * 1.8); // подгони 1.6–2.0 при необходимости
 			const x = Math.round(pacman.posX - size / 2);
@@ -1553,6 +1553,7 @@ function geronimo() {
 		context.save();
 		context.lineWidth = 0.5;
 		context.strokeStyle = color;
+	}
 
 		// horizontal grid lines
 		for (var i = 0; i <= canvas.height; i = i + gridPixelSize) {
