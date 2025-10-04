@@ -419,19 +419,22 @@ function geronimo() {
 			this.started = true;
 			this.gameOver = false;
 			
-			// ВАЖНО: присваиваем правильный номер уровня
-			this.level = this._pendingLevel || (this.level + 1);
-			delete this._pendingLevel;
-			this.refreshLevel(".level");
+			if (this._pendingLevel) {
+				this.level = this._pendingLevel;
+				delete this._pendingLevel;
+			}
 			
+			this.refreshLevel(".level");
 			this.awaitingNextLevel = false;
 			this.init(this.level);
+			
 			if (typeof this.forceStartAnimationLoop === 'function') {
 				this.forceStartAnimationLoop();
 			}
 			$('#game-buttons').show();
 			$('#menu-buttons').hide();
 		};
+
 
 
 		/* UI functions */
@@ -483,18 +486,22 @@ function geronimo() {
 			}
 		}
 
+		// Показываем сообщение на оверлее
 		this.showMessage = function (title, text) {
 			$('#canvas-overlay-container').fadeIn(200);
-			$('#game-buttons').hide(); // прячем только джойстик
-			$('#canvas-overlay-content #title').html(title);
-			$('#canvas-overlay-content #text').html(text);
-		}
-
+			$('#game-buttons').hide();
+			$('#menu-buttons').hide(); // меню убираем
+			$('#canvas-overlay-content').html(
+				`<div id="title">${title}</div><div id="text">${text || ''}</div>`
+			);
+		};
+		// Пауза + показать сообщение
 		this.pauseAndShowMessage = function (title, text) {
 			this.timer.stop();
 			this.pause = true;
 			this.showMessage(title, text);
 		};
+
 
 		this.closeMessage = function () {
 			$('#canvas-overlay-container').fadeOut(200);
@@ -655,14 +662,21 @@ function geronimo() {
 		};
 
 		this.endGame = function (allLevelsCompleted = false) {
-			console.log('Game Over by ' + (allLevelsCompleted ? 'WIN' : 'LOSS'));
-			stopAnimationLoop();
-			this.pause = true;
-			this.gameOver = true;
-		}
+			this.endGame = function (allLevelsCompleted = false) {
+				console.log('Game Over by ' + (allLevelsCompleted ? 'WIN' : 'LOSS'));
+				stopAnimationLoop();
+				this.pause = true;
+				this.gameOver = true;
+				
+				if (allLevelsCompleted) {
+					this.pauseAndShowMessage("You win!", "Congratulations!");
+				} else {
+					this.pauseAndShowMessage("Game Over", "Try again");
+				}
+				$('#menu-buttons').show();   // показываем меню
+				$('#game-buttons').hide();   // убираем джойстик
+			};
 
-		this.toPixelPos = function (gridPos) {
-			return gridPos * 30;
 		};
 
 		this.toGridPos = function (pixelPos) {
