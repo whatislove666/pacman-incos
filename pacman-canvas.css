@@ -262,3 +262,22 @@ body {
   color: #00e7ff;
   text-shadow: 0 0 6px #1fa2ff;
 }
+/* ==== Inco styled links in About section ==== */
+#info-content a {
+  display: inline-block;
+  margin: 6px 0;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #7a3cff, #1fa2ff);
+  color: #fff !important;
+  text-decoration: none;
+  font-size: 14px;
+  text-shadow: 0 0 4px rgba(0,0,0,0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#info-content a:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px #1fa2ff, 0 0 16px #7a3cff;
+}
+
