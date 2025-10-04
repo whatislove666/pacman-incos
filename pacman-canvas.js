@@ -479,15 +479,11 @@ function geronimo() {
 		}
 
 		this.showHighscoreForm = function () {
-			var scoreIsValid = this.validateScoreWithLevel();
-
-			var inputHTML = scoreIsValid ? `<div id='highscore-form'>
-					<span id='form-validator'></span>
-					<input type='text' id='playerName'/>
-					<span class='button' id='score-submit'>save</span>
-				</div>` : `<div id='invalid-score'>Your score looks fake, the highscore list is only for honest players ;)</div>`;
-			this.pauseAndShowMessage("Game over", "Total Score: " + this.score.score + (HIGHSCORE_ENABLED ? inputHTML : ''));
-			$('#playerName').focus();
+			this.pauseAndShowMessage(
+				"Game over",
+				"Total Score: " + this.score.score +
+				"<br/><span class='button' id='show-highscore'>Best INCOS</span>"
+			);
 		}
 
 		/* game controls */
@@ -1471,16 +1467,6 @@ function geronimo() {
 			if (!(game.gameOver === true)) game.pauseResume();
 		});
 
-		// highscore form submit event listener
-		$('body').on('click', '#score-submit', function () {
-			console.log("submit highscore pressed");
-			if ($('#playerName').val() === "" || $('#playerName').val() === undefined) {
-				$('#form-validator').html("Please enter a name<br/>");
-			} else {
-				$('#form-validator').html("");
-				addHighscore();
-			}
-		});
 
 		$('body').on('click', '#show-highscore', function () {
 			renderLeaderboard();                        // рендерим из localStorage
