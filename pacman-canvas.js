@@ -1554,7 +1554,7 @@ function geronimo() {
 		context.save();
 		context.lineWidth = 0.5;
 		context.strokeStyle = color;
-	}
+	
 
 		// horizontal grid lines
 		for (var i = 0; i <= canvas.height; i = i + gridPixelSize) {
