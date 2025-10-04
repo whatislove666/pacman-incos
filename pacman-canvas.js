@@ -391,11 +391,11 @@ function geronimo() {
 				saveScore(game.score.score || 0);     // ← ДОБАВИЛИ
 				game.showHighscoreForm(); 
 			} else {
-				this.level++;
-				console.log("Level " + game.level);
-				game.pauseAndShowMessage("Level " + game.level, this.getLevelTitle() + "<br/>(Click to continue!)");
-				game.refreshLevel(".level");
-				this.init(1);
+				// Останавливаем текущий цикл, ставим на паузу и показываем кнопку
+				if (typeof stopAnimationLoop === 'function') stopAnimationLoop();
+				this.pause = true;
+				this.started = false;
+				this.showNextLevelPrompt();
 			}
 		};
 
@@ -485,6 +485,14 @@ function geronimo() {
 				"<br/><span class='button' id='show-highscore'>Best INCOS</span>"
 			);
 		}
+
+		// Кнопка "NEXT LEVEL" поверх карты
+		this.showNextLevelPrompt = function () {
+			this.pauseAndShowMessage(
+				"Level " + this.level + " complete!",
+				"<span class='button' id='next-level-btn'>NEXT LEVEL</span>"
+			);
+		};
 
 		/* game controls */
 
@@ -1546,6 +1554,26 @@ function geronimo() {
 			event.preventDefault();
 			window.applicationCache.update();
 		});
+		// Старт следующего уровня по кнопке
+		$(document).on('click', '#next-level-btn', function () {
+			game.closeMessage();
+			game.pause = 0;
+			game.started = true;
+			game.gameOver = false;
+			
+			// Уровень уже инкрементирован в nextLevel(), просто инициализируем
+			game.init(game.level);
+			
+			// Запускаем цикл отрисовки
+			if (typeof game.forceStartAnimationLoop === 'function') {
+				game.forceStartAnimationLoop();
+			}
+			
+			// UI: показываем джойстик, прячем меню
+			$('#game-buttons').show();
+			$('#menu-buttons').hide();
+		});
+
 
 		// checkAppCache();
 
