@@ -458,7 +458,7 @@ function geronimo() {
 
 		this.showMessage = function (title, text) {
 			$('#canvas-overlay-container').fadeIn(200);
-			if ($('.controls').css('display') != "none") $('.controls').slideToggle(200);
+			$('#game-buttons').hide(); // прячем только джойстик
 			$('#canvas-overlay-content #title').text(title);
 			$('#canvas-overlay-content #text').html(text);
 		}
@@ -471,7 +471,8 @@ function geronimo() {
 
 		this.closeMessage = function () {
 			$('#canvas-overlay-container').fadeOut(200);
-			$('.controls').slideToggle(200);
+			$('#game-buttons').show();   // показываем джойстик
+			$('#menu-buttons').hide();   // меню не нужно во время игры
 		};
 
 		this.validateScoreWithLevel = function () {
@@ -1591,25 +1592,7 @@ function geronimo() {
 			event.preventDefault();
 			window.applicationCache.update();
 		});
-		// Старт следующего уровня по кнопке
-		$(document).on('click', '#next-level-btn', function () {
-			game.closeMessage();
-			game.pause = 0;
-			game.started = true;
-			game.gameOver = false;
-			
-			// Уровень уже инкрементирован в nextLevel(), просто инициализируем
-			game.init(game.level);
-			
-			// Запускаем цикл отрисовки
-			if (typeof game.forceStartAnimationLoop === 'function') {
-				game.forceStartAnimationLoop();
-			}
-			
-			// UI: показываем джойстик, прячем меню
-			$('#game-buttons').show();
-			$('#menu-buttons').hide();
-		});
+		
 
 		// Кнопка NEXT LEVEL
 		$(document).on('click', '#next-level-btn', function () {
