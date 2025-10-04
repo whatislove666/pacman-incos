@@ -1195,6 +1195,7 @@ function geronimo() {
 		}
 		this.enableBeastMode = function () {
 			this.beastMode = true;
+			agentMode = 'power';
 			this.beastModeTimer = 240;
 			console.debug("Beast Mode activated!");
 			inky.dazzle();
@@ -1204,6 +1205,7 @@ function geronimo() {
 		};
 		this.disableBeastMode = function () {
 			this.beastMode = false;
+			agentMode = 'normal';
 			console.debug("Beast Mode is over!");
 			inky.undazzle();
 			pinky.undazzle();
@@ -1275,11 +1277,13 @@ function geronimo() {
 		}
 		this.die = function () {
 			Sound.play("die");
+			agentMode = 'dead';
 			this.freeze();
 			this.dieAnimation();
 		}
 		this.dieFinal = function () {
 			this.reset();
+			agentMode = 'normal';
 			pinky.reset();
 			inky.reset();
 			blinky.reset();
@@ -1532,14 +1536,14 @@ function geronimo() {
 
 
 			// Pac Man
-			context.beginPath();
-			context.fillStyle = "Yellow";
-			context.strokeStyle = "Yellow";
-			context.arc(pacman.posX + pacman.radius, pacman.posY + pacman.radius, pacman.radius, pacman.angle1 * Math.PI, pacman.angle2 * Math.PI);
-			context.lineTo(pacman.posX + pacman.radius, pacman.posY + pacman.radius);
-			context.stroke();
-			context.fill();
-		}
+			const sprite = (AGENT[agentMode] || AGENT.normal);
+			context.drawImage(
+				sprite,
+				pacman.posX,           // X
+				pacman.posY,           // Y
+				pacman.radius * 1.7,     // ширина = диаметр
+				pacman.radius * 1.7      // высота = диаметр
+				}
 
 	}
 
