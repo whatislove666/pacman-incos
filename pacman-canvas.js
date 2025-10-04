@@ -382,6 +382,7 @@ function geronimo() {
 				$('#game-buttons').show();
 				$('#menu-buttons').hide();
 				this.showContent && this.showContent('game-content');
+				this.refreshLevel(".level");
 			}
 		};
 
@@ -421,6 +422,7 @@ function geronimo() {
 			// ВАЖНО: присваиваем правильный номер уровня
 			this.level = this._pendingLevel || (this.level + 1);
 			delete this._pendingLevel;
+			this.refreshLevel(".level");
 			
 			this.awaitingNextLevel = false;
 			this.init(this.level);
@@ -519,28 +521,6 @@ function geronimo() {
 				"<br/><span class='button' id='show-highscore'>Best INCOS</span>"
 			);
 		}
-
-
-		// Старт следующего уровня с экрана-приглашения
-		this.startNextLevelFromPrompt = function () {
-			this.closeMessage();
-			this.pause = 0;
-			this.started = true;
-			this.gameOver = false;
-			this.awaitingNextLevel = false;
-			// level уже инкрементирован в nextLevel()
-			this.init(this.level);
-			
-			// перезапускаем цикл отрисовки
-			if (typeof this.forceStartAnimationLoop === 'function') {
-				this.forceStartAnimationLoop();
-			}
-			
-			if (typeof $ !== 'undefined') {
-				$('#game-buttons').show();
-				$('#menu-buttons').hide();
-			}
-		};
 
 
 		/* game controls */
