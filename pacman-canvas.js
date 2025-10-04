@@ -1547,6 +1547,7 @@ function geronimo() {
 				size
 			);
 		}
+	}
 
 	// TODO: only for debugging
 	function renderGrid(gridPixelSize, color) {
