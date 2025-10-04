@@ -208,3 +208,27 @@ audio {display: block; }
 	/*canvas#myCanvas { margin: 5px auto; }	*/
 
 }
+/* ==== INCO overlay + logo (добавить в самый низ файла) ==== */
+
+/* Плавное исчезновение стартового оверлея */
+#canvas-overlay-container {
+  transition: opacity 1s ease; /* добавляем, не трогая старые свойства */
+}
+#canvas-overlay-container.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Лого на стартовом экране */
+.inco-logo {
+  width: 160px;              /* можно менять размер */
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 12px #1fa2ff) drop-shadow(0 0 24px #7a3cff);
+}
+
+/* Заголовок на стартовом экране (подсветка неоном) */
+#canvas-overlay-content #title {
+  color: #e6e6f0;
+  text-shadow: 0 0 8px #1fa2ff, 0 0 16px #7a3cff;
+}
+
