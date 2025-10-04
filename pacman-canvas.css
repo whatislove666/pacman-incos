@@ -232,3 +232,33 @@ audio {display: block; }
   text-shadow: 0 0 8px #1fa2ff, 0 0 16px #7a3cff;
 }
 
+/* === Inco Theme === */
+body {
+  background-color: #0b0b17;
+  color: #e6e6f0;
+}
+
+#myCanvas {
+  background: #0b0b17;
+  box-shadow: 0 0 20px #1fa2ff, 0 0 40px #7a3cff inset;
+}
+
+.button,
+.controlButton {
+  background: linear-gradient(135deg, #7a3cff, #1fa2ff);
+  border: none;
+  color: #fff;
+  text-shadow: 0 0 6px #000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button:hover,
+.controlButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px #1fa2ff, 0 0 24px #7a3cff;
+}
+
+.score, .lives, .level {
+  color: #00e7ff;
+  text-shadow: 0 0 6px #1fa2ff;
+}
