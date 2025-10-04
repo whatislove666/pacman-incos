@@ -356,7 +356,8 @@ function geronimo() {
 			if (this.level === FINAL_LEVEL) {
 				console.log('next level, ' + FINAL_LEVEL + ', end game');
 				game.endGame(true);
-				game.showHighscoreForm();
+				saveScore(game.score.score || 0);     // ← ДОБАВИЛИ
+				game.showHighscoreForm(); 
 			} else {
 				this.level++;
 				console.log("Level " + game.level);
@@ -1501,8 +1502,8 @@ function geronimo() {
 			game.newGame();
 		});
 		$(document).on('click', '.button#highscore', function (event) {
+			renderLeaderboard();                       // ← локальный лидерборд из localStorage
 			game.showContent('highscore-content');
-			getHighscore();
 		});
 		$(document).on('click', '.button#instructions', function (event) {
 			game.showContent('instructions-content');
