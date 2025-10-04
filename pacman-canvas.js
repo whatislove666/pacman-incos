@@ -387,26 +387,22 @@ function geronimo() {
 		};
 
 		this.nextLevel = function () {
-			const completedLevel = this.level;       // ТОЛЬКО ЧТО пройден
-			const nextLevel = this.level + 1;        // КОТОРЫЙ будем запускать
+			const completedLevel = this.level;
+			const nextLevel = this.level + 1;
 			
-			// Финальный кейс
-			if (nextLevel === FINAL_LEVEL) {
+			// Победа только если ТОЛЬКО ЧТО пройден финальный
+			if (completedLevel === FINAL_LEVEL) {
 				this.endGame(true);
 				saveScore(this.score.score || 0);
 				return;
 			}
-			
-			// Пауза и ожидание явного старта
 			if (typeof stopAnimationLoop === 'function') stopAnimationLoop();
 			this.pause = true;
 			this.started = false;
 			
-			// Флаги ожидания и запоминаем, какой уровень стартовать
 			this.awaitingNextLevel = true;
 			this._pendingLevel = nextLevel;
 			
-			// Сообщение + КНОПКА (HTML!)
 			this.pauseAndShowMessage(
 				`Level ${completedLevel} complete!`,
 				`<button id="next-level-btn" class="next-level-btn">NEXT LEVEL</button>`
@@ -556,10 +552,6 @@ function geronimo() {
 		}
 
 		this.pauseResume = function () {
-			if (this.awaitingNextLevel) {
-				this.startNextLevelFromPrompt();
-				return;
-			}
 			if (this.awaitingNextLevel) {
 				this.startNextLevelFromPrompt();
 				return;
