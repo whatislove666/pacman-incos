@@ -23,6 +23,47 @@ const AGENT = {
 let agentMode = 'normal';
 let agentPowerTimer = null;
 
+// === Leaderboard / player (localStorage) ===
+const STORAGE_KEYS = { leaderboard: 'inco_leaderboard', player: 'inco_player' };
+
+function getLeaderboard() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.leaderboard)) || []; }
+  catch { return []; }
+}
+function setLeaderboard(arr) {
+  localStorage.setItem(STORAGE_KEYS.leaderboard, JSON.stringify(arr.slice(0, 20)));
+}
+function getPlayerName() {
+  return localStorage.getItem(STORAGE_KEYS.player) || null;
+}
+function ensurePlayerName() {
+  let name = getPlayerName();
+  if (!name) {
+    name = (prompt('Enter your nickname (max 16 chars):') || 'anon').trim().slice(0, 16);
+    localStorage.setItem(STORAGE_KEYS.player, name);
+  }
+  return name;
+}
+function saveScore(score) {
+  const name = ensurePlayerName();
+  const entry = { name, score: Number(score)||0, ts: Date.now() };
+  const lb = getLeaderboard();
+  lb.push(entry);
+  lb.sort((a,b) => (b.score - a.score) || (a.ts - b.ts));
+  setLeaderboard(lb);
+}
+function renderLeaderboard() {
+  const ul = document.getElementById('highscore-list');
+  if (!ul) return;
+  ul.innerHTML = '';
+  getLeaderboard().slice(0,20).forEach((e,i)=>{
+    const li = document.createElement('li');
+    li.textContent = `${i+1}. ${e.name} — ${e.score}`;
+    ul.appendChild(li);
+  });
+}
+
+
 
 // global enums
 const GHOSTS = {
@@ -298,11 +339,15 @@ function geronimo() {
 		};
 
 		this.newGame = function () {
-			var r = confirm("Are you sure you want to restart?");
-			if (r) {
-				console.log("new Game");
-				this.init(0);
-				this.forceStartAnimationLoop();
+			ensurePlayerName();                 // спросим ник 1 раз
+			this.init(0);                       // подготовка уровня/состояний
+			this.forceStartAnimationLoop();     // сразу запуск цикла
+			this.pause = 0; this.started = true; this.gameOver = false;
+			// UI: показать джойстик, спрятать меню
+			if (typeof $ !== 'undefined') {
+				$('#game-buttons').show();
+				$('#menu-buttons').hide();
+				this.showContent && this.showContent('game-content');
 			}
 		};
 
@@ -1292,7 +1337,8 @@ function geronimo() {
 			console.log("pacman died, " + this.lives + " lives left");
 			if (this.lives <= 0) {
 				game.endGame();
-				game.showHighscoreForm();
+				saveScore(game.score.score || this.score || 0); // записали в локальный лидерборд
+				game.showHighscoreForm(); // можно оставить/убрать по желанию
 			}
 			game.drawHearts(this.lives);
 		}
@@ -1401,9 +1447,10 @@ function geronimo() {
 		});
 
 		$('body').on('click', '#show-highscore', function () {
-			game.showContent('highscore-content');
-			getHighscore();
+			renderLeaderboard();                        // рендерим из localStorage
+			game.showContent('highscore-content');      // показываем страницу
 		});
+
 
 		// Hammerjs Touch Events
 		Hammer('.container').on("swiperight", function (event) {
