@@ -1536,9 +1536,9 @@ function geronimo() {
 
 			//Pacman
 			const sprite = (AGENT[agentMode] || AGENT.normal);
-			const size = Math.floor(pacman.radius * 2); // подгони 1.6–2.0 при необходимости
-			const x = Math.round(pacman.posX - size / 2);
-			const y = Math.round(pacman.posY - size / 2);
+			const size = Math.floor(pacman.radius * 3); // подгони 1.6–2.0 при необходимости
+			const x = Math.round(pacman.posX - size / 2) + 2;
+			const y = Math.round(pacman.posY - size / 2) + 4;
 			context.drawImage(
 				sprite,
 				x,
