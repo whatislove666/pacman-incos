@@ -1537,15 +1537,15 @@ function geronimo() {
 
 			// Pac Man
 			const sprite = (AGENT[agentMode] || AGENT.normal);
+			const size = pacman.radius * 1.8; // можно играться с коэффициентом, чтобы подогнать размер
 			context.drawImage(
 				sprite,
-				pacman.posX,           // X
-				pacman.posY,           // Y
-				pacman.radius * 1.7,     // ширина = диаметр
-				pacman.radius * 1.7      // высота = диаметр
-				}
-
-	}
+				pacman.posX,
+				pacman.posY,
+				size,
+				size
+				
+			}
 
 	// TODO: only for debugging
 	function renderGrid(gridPixelSize, color) {
