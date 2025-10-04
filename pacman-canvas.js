@@ -1535,24 +1535,18 @@ function geronimo() {
 			clyde.draw(context);
 
 
-			const sprite = AGENT[agentMode] || AGENT.normal;
-			const size = Math.floor(pacman.radius * 1.8); // можно 2.0, если не цепляет стены
+			const sprite = (AGENT[agentMode] || AGENT.normal);
+			const size = Math.floor(pacman.radius * 1.8); // подгони 1.6–2.0 при необходимости
 			const x = Math.round(pacman.posX - size / 2);
 			const y = Math.round(pacman.posY - size / 2);
-			// рисуем только когда спрайт загрузился
-			if (sprite && sprite.complete && sprite.naturalWidth) {
-				context.save();
-				if (context.setTransform) context.setTransform(1, 0, 0, 1, 0, 0); // на всякий случай
-				if (context.imageSmoothingEnabled !== undefined) context.imageSmoothingEnabled = true;
-				context.drawImage(sprite, x, y, size, size);
-				context.restore();
-			} else {
-				// фолбэк: маленький круг, пока спрайт не загрузился (не обязателен)
-				context.beginPath();
-				context.fillStyle = "#8ecbff";
-				context.arc(pacman.posX, pacman.posY, size / 2, 0, Math.PI * 2);
-				context.fill();
-			}
+			context.drawImage(
+				sprite,
+				x,
+				y,
+				size,
+				size
+			);
+		}
 
 	// TODO: only for debugging
 	function renderGrid(gridPixelSize, color) {
