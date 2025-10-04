@@ -58,7 +58,7 @@ function renderLeaderboard() {
   ul.innerHTML = '';
   getLeaderboard().slice(0,20).forEach((e,i)=>{
     const li = document.createElement('li');
-    li.textContent = `${i+1}. ${e.name} — ${e.score}`;
+    li.textContent = `${e.name} — ${e.score}`;
     ul.appendChild(li);
   });
 }
